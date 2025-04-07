@@ -7,8 +7,8 @@ echo "============================"
 echo
 
 # Default repository URL - replace with your actual repository URL when you create it
-REPO_URL="https://github.com/yourusername/linux-server-bootstrap.git"
-CLONE_DIR="/tmp/linux-server-bootstrap"
+REPO_URL="https://github.com/zarguell/ansible_bootstrap.git"
+CLONE_DIR="/tmp/ansible_bootstrap"
 
 # Process command line arguments
 RUN_PLAYBOOK=true
