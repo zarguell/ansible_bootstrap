@@ -7,8 +7,34 @@ echo "============================"
 echo
 
 # Default repository URL - replace with your actual repository URL when you create it
-REPO_URL="https://github.com/zarguell/ansible_bootstrap.git"
-CLONE_DIR="/tmp/ansible_bootstrap"
+REPO_URL="https://github.com/yourusername/linux-server-bootstrap.git"
+CLONE_DIR="/tmp/linux-server-bootstrap"
+
+# Process command line arguments
+RUN_PLAYBOOK=true
+while getopts ":cr:n:" opt; do
+  case ${opt} in
+    c )
+      # Clone only, don't run the playbook
+      RUN_PLAYBOOK=false
+      ;;
+    r )
+      # Set custom repository URL
+      REPO_URL=$OPTARG
+      ;;
+    n )
+      # Set custom clone directory
+      CLONE_DIR=$OPTARG
+      ;;
+    \? )
+      echo "Usage: $0 [-c] [-r repo_url] [-n clone_dir]"
+      echo "  -c: Clone only (don't run the playbook)"
+      echo "  -r: Repository URL (default: $REPO_URL)"
+      echo "  -n: Clone directory (default: $CLONE_DIR)"
+      exit 1
+      ;;
+  esac
+done
 
 # Function to detect OS
 detect_os() {
@@ -65,7 +91,7 @@ check_deps() {
 
 # Function to clone the repository
 clone_repo() {
-    echo "Cloning bootstrap repository..."
+    echo "Cloning bootstrap repository from $REPO_URL to $CLONE_DIR..."
     if [ -d "$CLONE_DIR" ]; then
         echo "Removing existing directory $CLONE_DIR"
         rm -rf "$CLONE_DIR"
@@ -73,6 +99,40 @@ clone_repo() {
     
     git clone "$REPO_URL" "$CLONE_DIR"
     cd "$CLONE_DIR"
+    
+    # Update ansible.cfg to fix deprecation warnings and interpreter issues
+    if [ -f ansible.cfg ]; then
+        # Add or update the deprecation_warnings and interpreter_python settings
+        if grep -q "^deprecation_warnings" ansible.cfg; then
+            sed -i 's/^deprecation_warnings.*/deprecation_warnings = False/' ansible.cfg
+        else
+            echo "deprecation_warnings = False" >> ansible.cfg
+        fi
+        
+        if grep -q "^interpreter_python" ansible.cfg; then
+            sed -i 's/^interpreter_python.*/interpreter_python = auto_silent/' ansible.cfg
+        else
+            echo "interpreter_python = auto_silent" >> ansible.cfg
+        fi
+        
+        # Remove problematic callback if present
+        if grep -q "stdout_callback = yaml" ansible.cfg; then
+            sed -i '/stdout_callback = yaml/d' ansible.cfg
+        fi
+    else
+        # Create a new ansible.cfg file
+        cat > ansible.cfg << EOF
+[defaults]
+inventory = inventory
+roles_path = roles
+host_key_checking = False
+retry_files_enabled = False
+interpreter_python = auto_silent
+deprecation_warnings = False
+EOF
+    fi
+    
+    echo "Repository cloned successfully to $CLONE_DIR"
 }
 
 # Function to run the Ansible playbook
@@ -105,14 +165,17 @@ main() {
     ansible --version
     git --version
     
-    # Clone the repository and run the playbook
+    # Clone the repository
     clone_repo
-    run_playbook
     
-    echo "Bootstrap completed successfully!"
-    echo "You can find the configuration files in $CLONE_DIR"
-    echo "To make further changes, edit the files and re-run the playbook with:"
-    echo "cd $CLONE_DIR && ansible-playbook -i inventory server_bootstrap.yml"
+    # Run the playbook if requested
+    if [ "$RUN_PLAYBOOK" = true ]; then
+        run_playbook
+        echo "Bootstrap completed successfully!"
+    else
+        echo "Repository cloned to $CLONE_DIR - ready for manual configuration"
+        echo "To run the playbook manually: cd $CLONE_DIR && ansible-playbook -i inventory server_bootstrap.yml"
+    fi
 }
 
 main

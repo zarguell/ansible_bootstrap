@@ -14,27 +14,55 @@ A modular Ansible-based system for bootstrapping new Linux servers with your pre
 
 ## Quick Start
 
-1. Clone this repository to your new server or download the bootstrap script:
+1. Download and run the bootstrap script:
 
 ```bash
-curl -O https://raw.githubusercontent.com/zarguell/ansible_bootstrap/refs/heads/main/bootstrap.sh
+curl -O https://example.com/bootstrap.sh
 chmod +x bootstrap.sh
 ./bootstrap.sh
 ```
 
 This will:
 - Detect your OS
-- Install Ansible if needed
-- Create the necessary configuration files
+- Install Ansible and Git if needed
+- Clone the repository
 - Run the playbook to configure your server
+
+## Script Options
+
+The bootstrap script supports several options:
+
+```
+./bootstrap.sh [-c] [-r repo_url] [-n clone_dir]
+```
+
+- `-c`: Clone only (don't run the playbook)
+- `-r`: Set custom repository URL (default: https://github.com/yourusername/linux-server-bootstrap.git)
+- `-n`: Set custom clone directory (default: /tmp/linux-server-bootstrap)
+
+Examples:
+
+```bash
+# Clone only, don't run the playbook
+./bootstrap.sh -c
+
+# Use a custom repository
+./bootstrap.sh -r https://github.com/myusername/my-bootstrap.git
+
+# Specify a custom clone directory
+./bootstrap.sh -n /opt/bootstrap
+
+# Combine options
+./bootstrap.sh -c -r https://github.com/myusername/my-bootstrap.git -n /opt/bootstrap
+```
 
 ## Manual Installation
 
 If you prefer to run the steps manually:
 
-1. Install Ansible:
-   - For RHEL/Rocky Linux: `sudo dnf install -y epel-release && sudo dnf install -y ansible`
-   - For Ubuntu/Debian: `sudo apt update && sudo apt install -y software-properties-common && sudo apt-add-repository --yes --update ppa:ansible/ansible && sudo apt install -y ansible`
+1. Install Ansible and Git:
+   - For RHEL/Rocky Linux: `sudo dnf install -y epel-release && sudo dnf install -y ansible git`
+   - For Ubuntu/Debian: `sudo apt update && sudo apt install -y software-properties-common git && sudo apt-add-repository --yes --update ppa:ansible/ansible && sudo apt install -y ansible`
 
 2. Clone this repository:
    ```bash
@@ -95,7 +123,7 @@ To add new functionality:
 
 1. Create a new role:
    ```bash
-   mkdir -p roles/new_role/tasks
+   mkdir -p roles/new_role/{tasks,vars}
    ```
 
 2. Add the role's main tasks file:
@@ -103,19 +131,56 @@ To add new functionality:
    nano roles/new_role/tasks/main.yml
    ```
 
-3. Update the main playbook to include your new role:
+3. Create a default vars file:
+   ```bash
+   nano roles/new_role/vars/default.yml
+   ```
+
+4. Update the main playbook to include your new role:
    ```yaml
    - role: new_role
      when: modules.new_role | default(false)
      tags: new_role
    ```
 
-4. Update the config.yml file to add your new module:
+5. Update the config.yml file to add your new module:
    ```yaml
    modules:
      # existing modules...
      new_role: true
    ```
+
+## Repository Structure
+
+```
+bootstrap/
+├── bootstrap.sh                # Main bash script to detect OS and install Ansible
+├── ansible.cfg                 # Ansible configuration
+├── inventory                   # Inventory file for local execution
+├── server_bootstrap.yml        # Main playbook
+├── config.yml                  # Configuration file to enable/disable modules
+├── README.md                   # Documentation
+└── roles/                      # Ansible roles directory
+    ├── common/                 # Common tasks across all servers
+    │   ├── tasks/
+    │   ├── handlers/
+    │   └── vars/
+    ├── ansible_user/           # Create ansible user
+    │   ├── tasks/
+    │   └── vars/
+    ├── sudo_config/            # Configure sudo for ansible user
+    │   ├── tasks/
+    │   └── vars/
+    ├── repos/                  # Repository configuration
+    │   ├── tasks/
+    │   └── vars/
+    ├── oh_my_zsh/              # Oh My Zsh installation
+    │   ├── tasks/
+    │   └── vars/
+    └── utilities/              # Utility packages installation
+        ├── tasks/
+        └── vars/
+```
 
 ## Troubleshooting
 
@@ -134,6 +199,25 @@ If you encounter permissions issues, ensure you're running the playbook with sud
 ```bash
 sudo ansible-playbook -i inventory server_bootstrap.yml
 ```
+
+### Playbook Failures
+
+If the playbook fails, check:
+
+1. That all required vars files exist:
+   ```bash
+   ls -la roles/*/vars/
+   ```
+
+2. That the inventory file is correct:
+   ```bash
+   cat inventory
+   ```
+
+3. For more detailed error information, run the playbook with increased verbosity:
+   ```bash
+   ansible-playbook -i inventory server_bootstrap.yml -vvv
+   ```
 
 ## License
 
