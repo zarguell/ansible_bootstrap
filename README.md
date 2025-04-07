@@ -17,7 +17,7 @@ A modular Ansible-based system for bootstrapping new Linux servers with your pre
 1. Clone this repository to your new server or download the bootstrap script:
 
 ```bash
-curl -O https://example.com/bootstrap.sh
+curl -O https://raw.githubusercontent.com/zarguell/ansible_bootstrap/refs/heads/main/bootstrap.sh
 chmod +x bootstrap.sh
 ./bootstrap.sh
 ```
