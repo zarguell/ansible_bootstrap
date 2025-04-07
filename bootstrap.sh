@@ -7,8 +7,8 @@ echo "============================"
 echo
 
 # Default repository URL - replace with your actual repository URL when you create it
-REPO_URL="https://github.com/zarguell/ansible_bootstrap.git"
-CLONE_DIR="/tmp/ansible_bootstrap"
+REPO_URL="https://github.com/yourusername/linux-server-bootstrap.git"
+CLONE_DIR="/tmp/linux-server-bootstrap"
 
 # Process command line arguments
 RUN_PLAYBOOK=true
@@ -131,6 +131,25 @@ interpreter_python = auto_silent
 deprecation_warnings = False
 EOF
     fi
+    
+    # Create necessary vars directories and default files to prevent errors
+    echo "Creating necessary vars directories and files..."
+    mkdir -p vars
+    mkdir -p roles/{common,ansible_user,sudo_config,repos,oh_my_zsh,utilities}/vars
+    
+    # Create default vars file if it doesn't exist
+    if [ ! -f vars/default.yml ]; then
+        echo "---" > vars/default.yml
+        echo "# Default variables for all roles" >> vars/default.yml
+    fi
+    
+    # Create default vars files for each role if they don't exist
+    for role in common ansible_user sudo_config repos oh_my_zsh utilities; do
+        if [ ! -f "roles/$role/vars/default.yml" ]; then
+            echo "---" > "roles/$role/vars/default.yml"
+            echo "# Default variables for $role role" >> "roles/$role/vars/default.yml"
+        fi
+    done
     
     echo "Repository cloned successfully to $CLONE_DIR"
 }
