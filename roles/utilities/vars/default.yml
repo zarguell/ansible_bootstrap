@@ -1,0 +1,21 @@
+---
+common_packages:
+  - htop
+  - vim
+  - tmux
+  - curl
+  - wget
+  - unzip
+  - git
+  - jq
+  - tree
+  - ncdu
+  - iotop
+  - net-tools
+  - dnsutils
+  - tcpdump
+  - nmap
+  - traceroute
+  - lsof
+
+os_specific_packages: []

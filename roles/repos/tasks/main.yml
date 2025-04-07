@@ -1,0 +1,7 @@
+---
+- name: Include OS-specific repository tasks
+  include_tasks: "{{ item }}"
+  with_first_found:
+    - "{{ ansible_distribution | lower }}.yml"
+    - "{{ ansible_os_family | lower }}.yml"
+    - "default.yml"

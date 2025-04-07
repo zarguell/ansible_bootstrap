@@ -1,0 +1,17 @@
+---
+- name: Include OS-specific variables
+  include_vars: "{{ item }}"
+  with_first_found:
+    - "{{ ansible_distribution | lower }}.yml"
+    - "{{ ansible_os_family | lower }}.yml"
+    - "default.yml"
+
+- name: Install common utility packages
+  package:
+    name: "{{ common_packages }}"
+    state: present
+
+- name: Install OS-specific utility packages
+  package:
+    name: "{{ os_specific_packages }}"
+    state: present

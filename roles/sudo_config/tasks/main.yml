@@ -1,0 +1,29 @@
+---
+- name: Check if sudo is installed
+  package:
+    name: sudo
+    state: present
+
+- name: Create sudoers.d directory if it doesn't exist
+  file:
+    path: /etc/sudoers.d
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+
+- name: Configure passwordless sudo for ansible user
+  copy:
+    dest: /etc/sudoers.d/ansible
+    content: "ansible ALL=(ALL) NOPASSWD: ALL"
+    owner: root
+    group: root
+    mode: '0440'
+    validate: 'visudo -cf %s'
+
+- name: Ensure secure permissions on sudoers file
+  file:
+    path: /etc/sudoers.d/ansible
+    owner: root
+    group: root
+    mode: '0440'

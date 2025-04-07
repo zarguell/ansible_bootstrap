@@ -1,0 +1,25 @@
+---
+common_packages:
+  - htop
+  - vim-enhanced
+  - tmux
+  - curl
+  - wget
+  - unzip
+  - git
+  - jq
+  - tree
+  - ncdu
+  - iotop
+  - net-tools
+  - bind-utils
+  - tcpdump
+  - nmap
+  - traceroute
+  - lsof
+
+os_specific_packages:
+  - yum-utils
+  - dnf-plugins-core
+  - firewalld
+  - policycoreutils-python-utils

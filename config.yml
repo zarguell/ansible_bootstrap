@@ -1,0 +1,33 @@
+---
+# Enable or disable modules
+modules:
+  ansible_user: true
+  sudo_config: true
+  repos: true
+  oh_my_zsh: true
+  utilities: true
+
+# User configuration
+user_config:
+  create_ansible_user: true
+  ansible_user_ssh_key_path: "~/.ssh/id_rsa.pub"
+  
+# Package configuration
+package_config:
+  install_additional_packages: []
+  
+# Repository configuration
+repository_config:
+  enable_epel: true            # RHEL/CentOS/Rocky
+  enable_rpmfusion: true       # RHEL/CentOS/Rocky
+  enable_universe: true        # Ubuntu
+  enable_multiverse: true      # Ubuntu
+  
+# ZSH configuration
+zsh_config:
+  install_powerlevel10k: true
+  install_plugins:
+    - git
+    - docker
+    - history
+    - sudo

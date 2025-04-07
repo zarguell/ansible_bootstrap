@@ -1,0 +1,60 @@
+---
+- name: Install required packages
+  package:
+    name:
+      - zsh
+      - git
+      - curl
+    state: present
+
+- name: Check if Oh My Zsh is already installed for ansible user
+  stat:
+    path: /home/ansible/.oh-my-zsh
+  register: omz_ansible
+
+- name: Install Oh My Zsh for ansible user
+  shell: sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+  args:
+    executable: /bin/bash
+    creates: /home/ansible/.oh-my-zsh
+  become: yes
+  become_user: ansible
+  when: not omz_ansible.stat.exists
+
+- name: Set ZSH as default shell for ansible user
+  user:
+    name: ansible
+    shell: /bin/zsh
+
+- name: Check if Oh My Zsh is already installed for root
+  stat:
+    path: /root/.oh-my-zsh
+  register: omz_root
+
+- name: Install Oh My Zsh for root
+  shell: sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+  args:
+    executable: /bin/bash
+    creates: /root/.oh-my-zsh
+  when: not omz_root.stat.exists
+
+- name: Set ZSH as default shell for root
+  user:
+    name: root
+    shell: /bin/zsh
+
+- name: Install Powerlevel10k theme for ansible user
+  git:
+    repo: https://github.com/romkatv/powerlevel10k.git
+    dest: /home/ansible/.oh-my-zsh/custom/themes/powerlevel10k
+    depth: 1
+  become: yes
+  become_user: ansible
+
+- name: Configure .zshrc for ansible user
+  lineinfile:
+    path: /home/ansible/.zshrc
+    regexp: '^ZSH_THEME='
+    line: 'ZSH_THEME="powerlevel10k/powerlevel10k"'
+  become: yes
+  become_user: ansible

@@ -1,0 +1,39 @@
+---
+- name: Bootstrap Server Configuration
+  hosts: localhost
+  become: yes
+  vars_files:
+    - config.yml
+  
+  pre_tasks:
+    - name: Include OS-specific variables
+      include_vars: "{{ item }}"
+      with_first_found:
+        - "vars/{{ ansible_distribution | lower }}.yml"
+        - "vars/{{ ansible_os_family | lower }}.yml"
+        - "vars/default.yml"
+      tags: always
+  
+  roles:
+    - role: common
+      tags: common
+    
+    - role: ansible_user
+      when: modules.ansible_user | default(true)
+      tags: ansible_user
+    
+    - role: sudo_config
+      when: modules.sudo_config | default(true)
+      tags: sudo_config
+    
+    - role: repos
+      when: modules.repos | default(true)
+      tags: repos
+    
+    - role: oh_my_zsh
+      when: modules.oh_my_zsh | default(true)
+      tags: oh_my_zsh
+    
+    - role: utilities
+      when: modules.utilities | default(true)
+      tags: utilities

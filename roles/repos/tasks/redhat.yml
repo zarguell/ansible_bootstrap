@@ -1,0 +1,23 @@
+---
+- name: Enable EPEL repository
+  package:
+    name: epel-release
+    state: present
+  when: ansible_distribution in ['CentOS', 'Red Hat Enterprise Linux', 'Rocky Linux', 'AlmaLinux']
+
+- name: Enable PowerTools/CodeReady repository (for newer distributions)
+  command: "{{ item }}"
+  with_items:
+    - "dnf config-manager --set-enabled powertools"
+  ignore_errors: yes
+  changed_when: false
+  when: ansible_distribution_major_version | int >= 8
+
+- name: Add RPM Fusion repositories
+  package:
+    name:
+      - https://download1.rpmfusion.org/free/el/rpmfusion-free-release-{{ ansible_distribution_major_version }}.noarch.rpm
+      - https://download1.rpmfusion.org/nonfree/el/rpmfusion-nonfree-release-{{ ansible_distribution_major_version }}.noarch.rpm
+    state: present
+  ignore_errors: yes
+  when: ansible_distribution in ['CentOS', 'Red Hat Enterprise Linux', 'Rocky Linux', 'AlmaLinux']

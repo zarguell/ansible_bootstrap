@@ -1,0 +1,39 @@
+---
+- name: Update package cache (Debian/Ubuntu)
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+  when: ansible_os_family == "Debian"
+
+- name: Ensure essential packages are installed
+  package:
+    name:
+      - python3
+      - python3-pip
+      - openssl
+      - ca-certificates
+    state: present
+
+- name: Configure timezone
+  timezone:
+    name: UTC
+
+- name: Ensure hostname is set properly
+  hostname:
+    name: "{{ ansible_hostname }}"
+
+- name: Set up basic security settings
+  blockinfile:
+    path: /etc/ssh/sshd_config
+    backup: yes
+    marker: "# {mark} ANSIBLE MANAGED BLOCK - SECURITY SETTINGS"
+    block: |
+      PermitRootLogin no
+      PasswordAuthentication no
+      ChallengeResponseAuthentication no
+      UsePAM yes
+      X11Forwarding no
+  notify: Restart SSH service
+
+- name: Create handler for SSH restart
+  meta: flush_handlers

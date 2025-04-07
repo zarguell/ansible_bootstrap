@@ -1,0 +1,35 @@
+---
+- name: Create ansible group
+  group:
+    name: ansible
+    state: present
+
+- name: Create ansible user
+  user:
+    name: ansible
+    group: ansible
+    shell: /bin/bash
+    create_home: yes
+    state: present
+    comment: "Ansible Automation User"
+
+- name: Set authorized key for ansible user
+  authorized_key:
+    user: ansible
+    state: present
+    key: "{{ lookup('file', lookup('env','HOME') + '/.ssh/id_rsa.pub') }}"
+  ignore_errors: yes
+  register: ssh_key_result
+
+- name: Display message if SSH key not found
+  debug:
+    msg: "No SSH key found at ~/.ssh/id_rsa.pub. You'll need to manually add your SSH key for the ansible user."
+  when: ssh_key_result is failed
+
+- name: Ensure ansible user's .ssh directory exists
+  file:
+    path: /home/ansible/.ssh
+    state: directory
+    owner: ansible
+    group: ansible
+    mode: '0700'
