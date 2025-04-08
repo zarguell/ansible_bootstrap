@@ -60,10 +60,18 @@ install_deps_rhel() {
 
 # Function to install Ansible and Git on Ubuntu/Debian
 install_deps_debian() {
-    echo "Installing dependencies on Ubuntu/Debian..."
+    echo "Installing dependencies on Ubuntu..."
     sudo apt-get update
     sudo apt-get install -y software-properties-common git
     sudo apt-add-repository --yes --update ppa:ansible/ansible
+    sudo apt-get install -y ansible
+}
+
+# Function to install Ansible and Git on Debian
+install_deps_debian() {
+    echo "Installing dependencies on Debian..."
+    sudo apt-get update
+    sudo apt-get install -y software-properties-common git
     sudo apt-get install -y ansible
 }
 
@@ -170,7 +178,10 @@ main() {
             rhel|rocky|centos|fedora|almalinux)
                 install_deps_rhel
                 ;;
-            ubuntu|debian)
+            ubuntu)
+                install_deps_ubuntu
+                ;;
+            debian)
                 install_deps_debian
                 ;;
             *)
