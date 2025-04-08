@@ -23,11 +23,3 @@ repository_config:
   enable_universe: true        # Ubuntu
   enable_multiverse: true      # Ubuntu
   
-# ZSH configuration
-zsh_config:
-  install_powerlevel10k: true
-  install_plugins:
-    - git
-    - docker
-    - history
-    - sudo

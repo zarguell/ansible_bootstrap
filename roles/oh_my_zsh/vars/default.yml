@@ -2,3 +2,9 @@ zsh_config:
   users:
     - name: ansible
     - name: root
+install_powerlevel10k: true
+install_plugins:
+  - git
+  - docker
+  - history
+  - sudo
