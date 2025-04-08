@@ -1,6 +1,12 @@
 - name: Get home directory of {{ user.name }}
+  command: getent passwd {{ user.name }}
+  register: passwd_entry
+  changed_when: false
+
+- name: Set user_home fact
   set_fact:
-    user_home: "{{ lookup('ansible.builtin.getent', 'passwd', user.name).split(':')[5] }}"
+    user_home: "{{ passwd_entry.stdout.split(':')[5] }}"
+
 
 - name: Check if Oh My Zsh is installed
   stat:
