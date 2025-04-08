@@ -1,4 +1,3 @@
----
 - name: Install required packages
   package:
     name:
@@ -7,47 +6,8 @@
       - curl
     state: present
 
-- name: Manage Oh My Zsh installation and configuration for users
-  block:
-    - name: Ensure user home directory is available
-      set_fact:
-        user_home: "{{ lookup('ansible.builtin.getent', 'passwd', item).split(':')[5] }}"
-
-    - name: Check if Oh My Zsh is installed for the user
-      stat:
-        path: "{{ user_home }}/.oh-my-zsh"
-      register: omz_installed
-
-    - name: Install Oh My Zsh if not installed
-      shell: |
-        sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
-      args:
-        executable: /bin/bash
-        creates: "{{ user_home }}/.oh-my-zsh"
-      become: yes
-      become_user: "{{ item }}"
-      when: not omz_installed.stat.exists
-
-    - name: Set ZSH as default shell for the user
-      user:
-        name: "{{ item }}"
-        shell: /bin/zsh
-
-    - name: Install Powerlevel10k theme for the user
-      git:
-        repo: https://github.com/romkatv/powerlevel10k.git
-        dest: "{{ user_home }}/.oh-my-zsh/custom/themes/powerlevel10k"
-        depth: 1
-      become: yes
-      become_user: "{{ item }}"
-
-    - name: Configure .zshrc to use Powerlevel10k theme
-      lineinfile:
-        path: "{{ user_home }}/.zshrc"
-        regexp: '^ZSH_THEME='
-        line: 'ZSH_THEME="powerlevel10k/powerlevel10k"'
-      become: yes
-      become_user: "{{ item }}"
+- name: Configure Oh My Zsh for each user
+  include_tasks: per_user.yml
   loop: "{{ zsh_config.users }}"
   loop_control:
-    loop_var: item
+    loop_var: user

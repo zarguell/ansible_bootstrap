@@ -1,0 +1,39 @@
+- name: Get home directory of {{ user.name }}
+  set_fact:
+    user_home: "{{ lookup('ansible.builtin.getent', 'passwd', user.name).split(':')[5] }}"
+
+- name: Check if Oh My Zsh is installed
+  stat:
+    path: "{{ user_home }}/.oh-my-zsh"
+  register: omz_installed
+
+- name: Install Oh My Zsh
+  shell: |
+    sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+  args:
+    executable: /bin/bash
+    creates: "{{ user_home }}/.oh-my-zsh"
+  become: yes
+  become_user: "{{ user.name }}"
+  when: not omz_installed.stat.exists
+
+- name: Set ZSH as default shell
+  user:
+    name: "{{ user.name }}"
+    shell: /bin/zsh
+
+- name: Install Powerlevel10k theme
+  git:
+    repo: https://github.com/romkatv/powerlevel10k.git
+    dest: "{{ user_home }}/.oh-my-zsh/custom/themes/powerlevel10k"
+    depth: 1
+  become: yes
+  become_user: "{{ user.name }}"
+
+- name: Configure .zshrc with Powerlevel10k theme
+  lineinfile:
+    path: "{{ user_home }}/.zshrc"
+    regexp: '^ZSH_THEME='
+    line: 'ZSH_THEME="powerlevel10k/powerlevel10k"'
+  become: yes
+  become_user: "{{ user.name }}"
