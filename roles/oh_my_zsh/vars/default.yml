@@ -1,3 +1,4 @@
-omz_users:
-  - ansible
-  - root
+zsh_config:
+  users:
+    - name: ansible
+    - name: root
