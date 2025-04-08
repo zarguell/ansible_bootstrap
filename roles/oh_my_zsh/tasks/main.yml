@@ -8,20 +8,23 @@
     state: present
 
 - name: Manage Oh My Zsh installation and configuration for users
-  block:
+  tasks:
     - name: Retrieve user home directory
       command: getent passwd "{{ item }}"
       register: user_home_output
       changed_when: false
-
+      with_items: "{{ zsh_config.users }}"
+    
     - name: Parse home directory from getent output
       set_fact:
         user_home: "{{ user_home_output.stdout.split(':')[5] }}"
+      with_items: "{{ zsh_config.users }}"
 
     - name: Check if Oh My Zsh is already installed for the user
       stat:
         path: "{{ user_home }}/.oh-my-zsh"
       register: omz
+      with_items: "{{ zsh_config.users }}"
 
     - name: Install Oh My Zsh for the user
       shell: sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
@@ -31,11 +34,13 @@
       become: yes
       become_user: "{{ item }}"
       when: not omz.stat.exists
+      with_items: "{{ zsh_config.users }}"
 
     - name: Set ZSH as default shell for the user
       user:
         name: "{{ item }}"
         shell: /bin/zsh
+      with_items: "{{ zsh_config.users }}"
 
     - name: Install Powerlevel10k theme for the user
       git:
@@ -44,6 +49,7 @@
         depth: 1
       become: yes
       become_user: "{{ item }}"
+      with_items: "{{ zsh_config.users }}"
 
     - name: Configure .zshrc for the user
       lineinfile:
@@ -52,5 +58,4 @@
         line: 'ZSH_THEME="powerlevel10k/powerlevel10k"'
       become: yes
       become_user: "{{ item }}"
-
-  loop: "{{ zsh_config.users }}"
+      with_items: "{{ zsh_config.users }}"
