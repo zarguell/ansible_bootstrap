@@ -17,9 +17,9 @@ A modular Ansible-based system for bootstrapping new Linux servers with your pre
 1. Download and run the bootstrap script:
 
 ```bash
-curl -O https://raw.githubusercontent.com/zarguell/ansible_bootstrap/refs/heads/main/server_bootstrap.yml
-chmod +x server_bootstrap.sh
-./server_bootstrap.sh
+curl -O https://raw.githubusercontent.com/zarguell/ansible_bootstrap/refs/heads/main/bootstrap.sh
+chmod +x bootstrap.sh
+./bootstrap.sh
 ```
 
 This will:
@@ -33,7 +33,7 @@ This will:
 The bootstrap script supports several options:
 
 ```
-./server_bootstrap.sh [-c] [-r repo_url] [-n clone_dir]
+./bootstrap.sh [-c] [-r repo_url] [-n clone_dir]
 ```
 
 - `-c`: Clone only (don't run the playbook)
@@ -44,16 +44,16 @@ Examples:
 
 ```bash
 # Clone only, don't run the playbook
-./server_bootstrap.sh -c
+./bootstrap.sh -c
 
 # Use a custom repository
-./server_bootstrap.sh -r https://github.com/myusername/my-bootstrap.git
+./bootstrap.sh -r https://github.com/zarguell/ansible_bootstrap.git
 
 # Specify a custom clone directory
-./server_bootstrap.sh -n /opt/bootstrap
+./bootstrap.sh -n /opt/bootstrap
 
 # Combine options
-./server_bootstrap.sh -c -r https://github.com/zarguell/ansible_bootstrap.git -n /opt/bootstrap
+./bootstrap.sh -c -r https://github.com/zarguell/ansible_bootstrap.git -n /opt/bootstrap
 ```
 
 ## Manual Installation
