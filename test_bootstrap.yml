@@ -75,9 +75,9 @@
       loop:
         - { name: "SSH Service", status: "{{ 'PASS' if ssh_test.status.ActiveState == 'active' else 'FAIL' }}" }
         - { name: "Ansible User", status: "{{ 'PASS' if ansible_user_test is succeeded else 'FAIL' }}" }
-        - { name: "Sudo Access", status: "{{ 'PASS' if sudo_test.rc == 0 else 'FAIL' }}" }
-        - { name: "Docker", status: "{{ 'PASS' if docker_test.rc == 0 else 'SKIP' if not (modules.docker | default(false)) else 'FAIL' }}" }
-        - { name: "Docker Compose", status: "{{ 'PASS' if docker_compose_test.rc == 0 else 'SKIP' if not (modules.docker | default(false)) else 'FAIL' }}" }
+        - { name: "Sudo Access", status: "{{ 'PASS' if sudo_test.rc | default(-1) == 0 else 'FAIL' }}" }
+        - { name: "Docker", status: "{{ 'PASS' if docker_test.rc | default(-1) == 0 else 'SKIP' if not (modules.docker | default(false)) else 'FAIL' }}" }
+        - { name: "Docker Compose", status: "{{ 'PASS' if docker_compose_test.rc | default(-1) == 0 else 'SKIP' if not (modules.docker | default(false)) else 'FAIL' }}" }
         - { name: "Oh My Zsh", status: "{{ 'PASS' if omz_test.stat.exists else 'SKIP' if not (modules.oh_my_zsh | default(false)) else 'FAIL' }}" }
 
     - name: Display test results
