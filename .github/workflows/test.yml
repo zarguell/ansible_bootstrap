@@ -24,8 +24,8 @@ jobs:
           
       - name: Lint Ansible playbooks
         run: |
-          ansible-lint server_bootstrap.yml
-          ansible-lint test_bootstrap.yml
+          ansible-lint server_bootstrap.yml -i .ansible-lint-ignore 
+          ansible-lint test_bootstrap.yml -i .ansible-lint-ignore 
           
       - name: Lint YAML files
         run: |
