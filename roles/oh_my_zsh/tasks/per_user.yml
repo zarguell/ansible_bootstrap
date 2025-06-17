@@ -1,20 +1,22 @@
+# Fixed roles/oh_my_zsh/tasks/per_user.yml
+---
 - name: Get home directory of {{ user.name }}
-  command: getent passwd {{ user.name }}
-  register: passwd_entry
-  changed_when: false
+  ansible.builtin.getent:
+    database: passwd
+    key: "{{ user.name }}"
+  register: user_info
 
 - name: Set user_home fact
-  set_fact:
-    user_home: "{{ passwd_entry.stdout.split(':')[5] }}"
-
+  ansible.builtin.set_fact:
+    user_home: "{{ user_info.ansible_facts.getent_passwd[user.name][4] }}"
 
 - name: Check if Oh My Zsh is installed
-  stat:
+  ansible.builtin.stat:
     path: "{{ user_home }}/.oh-my-zsh"
   register: omz_installed
 
 - name: Install Oh My Zsh
-  shell: |
+  ansible.builtin.shell: |
     sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
   args:
     executable: /bin/bash
@@ -24,22 +26,82 @@
   when: not omz_installed.stat.exists
 
 - name: Set ZSH as default shell
-  user:
+  ansible.builtin.user:
     name: "{{ user.name }}"
     shell: /bin/zsh
 
 - name: Install Powerlevel10k theme
-  git:
+  ansible.builtin.git:
     repo: https://github.com/romkatv/powerlevel10k.git
     dest: "{{ user_home }}/.oh-my-zsh/custom/themes/powerlevel10k"
     depth: 1
+    force: yes
   become: yes
   become_user: "{{ user.name }}"
 
 - name: Configure .zshrc with Powerlevel10k theme
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: "{{ user_home }}/.zshrc"
     regexp: '^ZSH_THEME='
     line: 'ZSH_THEME="powerlevel10k/powerlevel10k"'
+    backup: yes
   become: yes
   become_user: "{{ user.name }}"
+
+---
+# Fixed roles/oh_my_zsh/tasks/main.yml
+- name: Install required packages
+  ansible.builtin.package:
+    name:
+      - zsh
+      - git
+      - curl
+    state: present
+
+- name: Configure Oh My Zsh for each user
+  ansible.builtin.include_tasks: per_user.yml
+  loop: "{{ zsh_config.users }}"
+  loop_control:
+    loop_var: user
+
+---  
+# Fixed roles/common/tasks/main.yml
+- name: Update package cache (Debian/Ubuntu)
+  ansible.builtin.apt:
+    update_cache: yes
+    cache_valid_time: 3600
+  when: ansible_os_family == "Debian"
+
+- name: Ensure essential packages are installed
+  ansible.builtin.package:
+    name:
+      - python3
+      - python3-pip
+      - openssl
+      - ca-certificates
+      - acl
+    state: present
+
+- name: Configure timezone
+  community.general.timezone:
+    name: UTC
+
+- name: Ensure hostname is set properly
+  ansible.builtin.hostname:
+    name: "{{ ansible_hostname }}"
+
+- name: Set up basic security settings
+  ansible.builtin.blockinfile:
+    path: /etc/ssh/sshd_config
+    backup: yes
+    marker: "# {mark} ANSIBLE MANAGED BLOCK - SECURITY SETTINGS"
+    block: |
+      PermitRootLogin no
+      PasswordAuthentication no
+      ChallengeResponseAuthentication no
+      UsePAM yes
+      X11Forwarding no
+  notify: Restart SSH service
+
+- name: Flush handlers to restart SSH if needed
+  ansible.builtin.meta: flush_handlers

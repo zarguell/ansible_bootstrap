@@ -1,0 +1,23 @@
+---
+# Docker version and configuration
+docker_compose_version: "v2.24.5"
+install_docker_compose: true
+
+# Users to add to docker group
+docker_users:
+  - ansible
+
+# Docker daemon configuration
+docker_daemon_config:
+  log-driver: "json-file"
+  log-opts:
+    max-size: "100m"
+    max-file: "3"
+  storage-driver: "overlay2"
+  live-restore: true
+
+# Docker registry mirrors (optional)
+# docker_registry_mirrors: []
+
+# Docker insecure registries (optional)
+# docker_insecure_registries: []

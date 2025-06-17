@@ -1,28 +1,30 @@
 ---
-# Enable or disable modules
+# Module configuration - enable or disable specific roles
 modules:
   ansible_user: true
   sudo_config: true
   repos: true
   oh_my_zsh: true
   utilities: true
+  docker: true
 
 # User configuration
 user_config:
   create_ansible_user: true
   ansible_user_ssh_key_path: "~/.ssh/id_rsa.pub"
-  
+
 # Package configuration
 package_config:
   install_additional_packages: []
-  
+
 # Repository configuration
 repository_config:
-  enable_epel: true            # RHEL/CentOS/Rocky
-  enable_rpmfusion: true       # RHEL/CentOS/Rocky
-  enable_universe: true        # Ubuntu
-  enable_multiverse: true      # Ubuntu
-  
+  enable_epel: true
+  enable_rpmfusion: true
+  enable_universe: true
+  enable_multiverse: true
+
+# ZSH configuration
 zsh_config:
   users:
     - name: ansible
@@ -33,3 +35,17 @@ zsh_config:
     - docker
     - history
     - sudo
+
+# Docker configuration
+docker_config:
+  install_docker_compose: true
+  docker_compose_version: "v2.24.5"
+  users:
+    - ansible
+  daemon_config:
+    log-driver: "json-file"
+    log-opts:
+      max-size: "100m"
+      max-file: "3"
+    storage-driver: "overlay2"
+    live-restore: true

@@ -4,7 +4,7 @@
   become: yes
   vars_files:
     - config.yml
-  
+
   pre_tasks:
     - name: Create vars directory for common role if it doesn't exist
       file:
@@ -23,32 +23,41 @@
       include_vars: "{{ item }}"
       with_first_found:
         - "vars/{{ ansible_distribution | lower }}.yml"
-        - "vars/{{ ansible_os_family | lower }}.yml"
+        - "vars/{{ ansible_os_family | lower }}.yml" 
         - "vars/default.yml"
-        - "roles/common/vars/default.yml"  # Always provide a fallback
-      ignore_errors: yes  # Continue even if no file is found
+        - "roles/common/vars/default.yml"
+      ignore_errors: yes
       tags: always
-  
+
   roles:
     - role: common
       tags: common
-    
-    - role: ansible_user
-      when: modules.ansible_user | default(true)
-      tags: ansible_user
-    
-    - role: sudo_config
-      when: modules.sudo_config | default(true)
-      tags: sudo_config
-    
+
     - role: repos
       when: modules.repos | default(true)
       tags: repos
-    
-    - role: oh_my_zsh
-      when: modules.oh_my_zsh | default(true)
-      tags: oh_my_zsh
-    
+
+    - role: ansible_user
+      when: modules.ansible_user | default(true)
+      tags: ansible_user
+
+    - role: sudo_config
+      when: modules.sudo_config | default(true)
+      tags: sudo_config
+
     - role: utilities
       when: modules.utilities | default(true)
       tags: utilities
+
+    - role: docker
+      when: modules.docker | default(false)
+      tags: docker
+      vars:
+        docker_users: "{{ docker_config.users | default(['ansible']) }}"
+        install_docker_compose: "{{ docker_config.install_docker_compose | default(true) }}"
+        docker_compose_version: "{{ docker_config.docker_compose_version | default('v2.24.5') }}"
+        docker_daemon_config: "{{ docker_config.daemon_config | default({}) }}"
+
+    - role: oh_my_zsh
+      when: modules.oh_my_zsh | default(true)
+      tags: oh_my_zsh
