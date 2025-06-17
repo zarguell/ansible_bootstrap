@@ -1,0 +1,146 @@
+name: Test Bootstrap Configuration
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.13'
+          
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install ansible ansible-lint yamllint
+          
+      - name: Lint Ansible playbooks
+        run: |
+          ansible-lint server_bootstrap.yml
+          ansible-lint test_bootstrap.yml
+          
+      - name: Lint YAML files
+        run: |
+          yamllint -d relaxed .
+
+  test-ubuntu:
+    runs-on: ubuntu-latest
+    needs: lint
+    strategy:
+      matrix:
+        ubuntu-version: ['22.04', '24.04']
+        environment: ['minimal', 'development', 'production']
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up test environment
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ansible
+          
+      - name: Run bootstrap test
+        run: |
+          export BOOTSTRAP_ENVIRONMENT=${{ matrix.environment }}
+          ansible-playbook -i inventory test_bootstrap.yml --check
+          
+      - name: Run actual bootstrap
+        run: |
+          export BOOTSTRAP_ENVIRONMENT=${{ matrix.environment }}
+          ansible-playbook -i inventory server_bootstrap.yml
+          
+      - name: Verify installation
+        run: |
+          ansible-playbook -i inventory test_bootstrap.yml
+
+  test-centos:
+    runs-on: ubuntu-latest
+    needs: lint
+    strategy:
+      matrix:
+        environment: ['minimal', 'development', 'production']
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Test with Docker
+        run: |
+          docker run --rm -v $PWD:/workspace -w /workspace \
+            centos:8 \
+            /bin/bash -c "
+              dnf install -y epel-release && \
+              dnf install -y ansible && \
+              export BOOTSTRAP_ENVIRONMENT=${{ matrix.environment }} && \
+              ansible-playbook -i inventory server_bootstrap.yml --check
+            "
+
+---
+# Makefile for development workflow
+.PHONY: help install lint test clean validate
+
+help: ## Show this help message
+	@echo 'Usage: make [target]'
+	@echo ''
+	@echo 'Targets:'
+	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  %-15s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
+
+install: ## Install development dependencies
+	@echo "Installing development dependencies..."
+	pip install ansible ansible-lint yamllint molecule molecule-docker
+	ansible-galaxy install -r requirements.yml 2>/dev/null || true
+
+lint: ## Run linting on all files
+	@echo "Running YAML lint..."
+	yamllint -d relaxed .
+	@echo "Running Ansible lint..."
+	ansible-lint server_bootstrap.yml
+	ansible-lint test_bootstrap.yml
+
+test: ## Run tests in check mode
+	@echo "Running bootstrap test..."
+	ansible-playbook -i inventory server_bootstrap.yml --check
+	ansible-playbook -i inventory test_bootstrap.yml --check
+
+validate: ## Validate configuration files
+	@echo "Validating Ansible syntax..."
+	ansible-playbook -i inventory server_bootstrap.yml --syntax-check
+	ansible-playbook -i inventory test_bootstrap.yml --syntax-check
+	@echo "Validating YAML syntax..."
+	python -c "import yaml; yaml.safe_load(open('config.yml'))"
+
+clean: ## Clean temporary files
+	@echo "Cleaning temporary files..."
+	find . -name "*.retry" -delete
+	find . -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
+	find . -name "*.pyc" -delete
+
+bootstrap-dev: ## Run bootstrap in development mode
+	@export BOOTSTRAP_ENVIRONMENT=development && \
+	ansible-playbook -i inventory server_bootstrap.yml
+
+bootstrap-prod: ## Run bootstrap in production mode
+	@export BOOTSTRAP_ENVIRONMENT=production && \
+	ansible-playbook -i inventory server_bootstrap.yml
+
+bootstrap-minimal: ## Run minimal bootstrap
+	@export BOOTSTRAP_ENVIRONMENT=minimal && \
+	ansible-playbook -i inventory server_bootstrap.yml
+
+test-all: ## Run comprehensive tests
+	@echo "Running comprehensive test suite..."
+	make validate
+	make lint
+	make test
+	ansible-playbook -i inventory test_bootstrap.yml
+
+docs: ## Generate documentation
+	@echo "Generating documentation..."
+	ansible-doc-extractor --template=templates/doc.j2 roles/ > ROLES.md

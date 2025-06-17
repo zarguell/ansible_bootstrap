@@ -1,0 +1,73 @@
+---
+- name: Include OS-specific variables
+  ansible.builtin.include_vars: "{{ item }}"
+  with_first_found:
+    - "{{ ansible_distribution | lower }}.yml"
+    - "{{ ansible_os_family | lower }}.yml"
+    - "default.yml"
+
+- name: Configure firewall
+  ansible.builtin.include_tasks: "firewall_{{ ansible_os_family | lower }}.yml"
+
+- name: Configure automatic security updates
+  ansible.builtin.include_tasks: "auto_updates_{{ ansible_os_family | lower }}.yml"
+
+- name: Set secure kernel parameters
+  ansible.posix.sysctl:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+    state: present
+    reload: yes
+  loop:
+    - { name: "net.ipv4.ip_forward", value: "0" }
+    - { name: "net.ipv4.conf.all.send_redirects", value: "0" }
+    - { name: "net.ipv4.conf.default.send_redirects", value: "0" }
+    - { name: "net.ipv4.conf.all.accept_source_route", value: "0" }
+    - { name: "net.ipv4.conf.default.accept_source_route", value: "0" }
+    - { name: "net.ipv4.conf.all.accept_redirects", value: "0" }
+    - { name: "net.ipv4.conf.default.accept_redirects", value: "0" }
+    - { name: "net.ipv4.conf.all.secure_redirects", value: "0" }
+    - { name: "net.ipv4.conf.default.secure_redirects", value: "0" }
+    - { name: "net.ipv4.conf.all.log_martians", value: "1" }
+    - { name: "net.ipv4.conf.default.log_martians", value: "1" }
+    - { name: "net.ipv4.icmp_echo_ignore_broadcasts", value: "1" }
+    - { name: "net.ipv4.icmp_ignore_bogus_error_responses", value: "1" }
+    - { name: "net.ipv4.tcp_syncookies", value: "1" }
+    - { name: "kernel.dmesg_restrict", value: "1" }
+  when: security_kernel_hardening | default(true)
+
+- name: Configure SSH hardening
+  ansible.builtin.blockinfile:
+    path: /etc/ssh/sshd_config
+    backup: yes
+    marker: "# {mark} ANSIBLE MANAGED BLOCK - SSH HARDENING"
+    block: |
+      # SSH Hardening
+      Protocol 2
+      MaxAuthTries 3
+      ClientAliveInterval 300
+      ClientAliveCountMax 2
+      IgnoreRhosts yes
+      HostbasedAuthentication no
+      EmptyPasswords no
+      MaxStartups 10:30:100
+      AllowUsers {{ ssh_allowed_users | join(' ') }}
+      DenyUsers {{ ssh_denied_users | join(' ') }}
+  notify: restart ssh
+  when: security_ssh_hardening | default(true)
+
+- name: Configure fail2ban
+  ansible.builtin.include_tasks: fail2ban.yml
+  when: security_fail2ban | default(true)
+
+- name: Set file permissions on sensitive files
+  ansible.builtin.file:
+    path: "{{ item }}"
+    mode: "0600"
+    owner: root
+    group: root
+  loop:
+    - /etc/shadow
+    - /etc/gshadow
+    - /etc/ssh/sshd_config
+  ignore_errors: yes

@@ -1,47 +1,97 @@
 ---
-# Module configuration - enable or disable specific roles
+# Environment configuration
+environment: "{{ bootstrap_environment | default('production') }}"
+
+# Global settings
+global:
+  timezone: "UTC"
+  locale: "en_US.UTF-8"
+  update_system: true
+  reboot_required: false
+
+# Module configuration with environment-specific defaults
 modules:
   ansible_user: true
   sudo_config: true
   repos: true
-  oh_my_zsh: true
+  oh_my_zsh: "{{ true if environment != 'minimal' else false }}"
   utilities: true
-  docker: true
+  docker: "{{ true if environment in ['development', 'production'] else false }}"
+  security: "{{ true if environment == 'production' else false }}"
+  monitoring: "{{ true if environment == 'production' else false }}"
 
 # User configuration
 user_config:
   create_ansible_user: true
   ansible_user_ssh_key_path: "~/.ssh/id_rsa.pub"
+  additional_users: []
+  # Example:
+  # additional_users:
+  #   - name: developer
+  #     shell: /bin/zsh
+  #     groups: [docker, sudo]
+  #     ssh_key: "ssh-rsa AAAAB3..."
+
+# Security configuration
+security_config:
+  ssh_hardening: true
+  firewall_enabled: true
+  fail2ban_enabled: true
+  kernel_hardening: "{{ true if environment == 'production' else false }}"
+  ssh_allowed_users: ["ansible", "{{ ansible_user | default('root') }}"]
+  ssh_denied_users: []
+  ssh_port: 22
+  allowed_ports:
+    - 22    # SSH
+    - 80    # HTTP
+    - 443   # HTTPS
+    - 2376  # Docker daemon (if Docker enabled)
 
 # Package configuration
 package_config:
   install_additional_packages: []
+  # Environment-specific packages
+  development_packages:
+    - nodejs
+    - npm
+    - python3-dev
+    - build-essential
+  production_packages:
+    - logrotate
+    - rsyslog
+    - ntp
 
 # Repository configuration
 repository_config:
   enable_epel: true
-  enable_rpmfusion: true
+  enable_rpmfusion: "{{ true if environment == 'development' else false }}"
   enable_universe: true
-  enable_multiverse: true
+  enable_multiverse: "{{ true if environment == 'development' else false }}"
+  custom_repositories: []
 
 # ZSH configuration
 zsh_config:
   users:
     - name: ansible
-    - name: root
+    - name: "{{ ansible_user | default('root') }}"
   install_powerlevel10k: true
   install_plugins:
     - git
     - docker
     - history
     - sudo
-
+    - ansible
+  custom_aliases:
+    ll: "ls -alF"
+    la: "ls -A"
+    l: "ls -CF"
+    grep: "grep --color=auto"
+    
 # Docker configuration
 docker_config:
   install_docker_compose: true
   docker_compose_version: "v2.24.5"
-  users:
-    - ansible
+  users: ["ansible"]
   daemon_config:
     log-driver: "json-file"
     log-opts:
@@ -49,3 +99,53 @@ docker_config:
       max-file: "3"
     storage-driver: "overlay2"
     live-restore: true
+    userland-proxy: false
+  # Insecure registries for development
+  insecure_registries: "{{ ['localhost:5000'] if environment == 'development' else [] }}"
+
+# Monitoring configuration
+monitoring_config:
+  install_node_exporter: "{{ true if environment == 'production' else false }}"
+  centralized_logging: false
+  log_retention_days: 30
+  alert_email: ""
+  services_to_monitor:
+    - ssh
+    - docker
+    - nginx
+  disk_usage_threshold: 80
+  memory_usage_threshold: 85
+
+# Network configuration
+network_config:
+  configure_firewall: "{{ true if environment == 'production' else false }}"
+  default_firewall_policy: "deny"
+  fail2ban_settings:
+    bantime: 3600
+    findtime: 600
+    maxretry: 5
+    backend: systemd
+
+# Backup configuration
+backup_config:
+  enabled: "{{ true if environment == 'production' else false }}"
+  backup_directories:
+    - /etc
+    - /home
+    - /var/log
+  backup_destination: "/backup"
+  retention_days: 30
+
+# Performance tuning
+performance_config:
+  enable_tuning: "{{ true if environment == 'production' else false }}"
+  swappiness: 10
+  vm_dirty_ratio: 15
+  vm_dirty_background_ratio: 5
+  net_core_rmem_max: 16777216
+  net_core_wmem_max: 16777216
+
+# Environment-specific variable files
+include_vars:
+  - "environments/{{ environment }}.yml"
+  - "environments/{{ environment }}/{{ inventory_hostname }}.yml"

@@ -1,0 +1,57 @@
+---
+- name: Install monitoring tools
+  ansible.builtin.package:
+    name: "{{ monitoring_packages }}"
+    state: present
+
+- name: Configure rsyslog for centralized logging
+  ansible.builtin.template:
+    src: rsyslog.conf.j2
+    dest: /etc/rsyslog.d/50-ansible.conf
+    backup: yes
+  notify: restart rsyslog
+  when: monitoring_centralized_logging | default(false)
+
+- name: Configure logrotate for application logs
+  ansible.builtin.template:
+    src: logrotate.j2
+    dest: /etc/logrotate.d/ansible-apps
+    mode: '0644'
+  when: monitoring_logrotate | default(true)
+
+- name: Install and configure node_exporter for Prometheus
+  ansible.builtin.include_tasks: node_exporter.yml
+  when: monitoring_prometheus | default(false)
+
+- name: Configure system monitoring scripts
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "/usr/local/bin/{{ item }}"
+    mode: '0755'
+  loop:
+    - disk-usage-alert.sh
+    - memory-usage-alert.sh
+    - service-health-check.sh
+  when: monitoring_scripts | default(true)
+
+- name: Set up monitoring cron jobs
+  ansible.builtin.cron:
+    name: "{{ item.name }}"
+    minute: "{{ item.minute }}"
+    hour: "{{ item.hour }}"
+    job: "{{ item.job }}"
+    user: root
+  loop:
+    - name: "Disk usage check"
+      minute: "0"
+      hour: "*/4"
+      job: "/usr/local/bin/disk-usage-alert.sh"
+    - name: "Memory usage check"
+      minute: "*/15"
+      hour: "*"
+      job: "/usr/local/bin/memory-usage-alert.sh"
+    - name: "Service health check"
+      minute: "*/5"
+      hour: "*"
+      job: "/usr/local/bin/service-health-check.sh"
+  when: monitoring_cron_jobs | default(true)

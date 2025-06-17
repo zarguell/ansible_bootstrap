@@ -1,0 +1,104 @@
+# test_bootstrap.yml - Comprehensive testing playbook
+---
+- name: Test Bootstrap Configuration
+  hosts: localhost
+  become: yes
+  gather_facts: yes
+  vars:
+    test_results: []
+
+  tasks:
+    - name: Test SSH service
+      ansible.builtin.systemd:
+        name: "{{ 'sshd' if ansible_os_family == 'RedHat' else 'ssh' }}"
+        state: started
+      register: ssh_test
+      failed_when: false
+
+    - name: Test ansible user exists
+      ansible.builtin.user:
+        name: ansible
+        state: present
+      register: ansible_user_test
+      failed_when: false
+      check_mode: yes
+
+    - name: Test ansible user sudo access
+      ansible.builtin.command: sudo -u ansible sudo -n true
+      register: sudo_test
+      failed_when: false
+      changed_when: false
+
+    - name: Test Docker installation
+      ansible.builtin.command: docker --version
+      register: docker_test
+      failed_when: false
+      changed_when: false
+      when: modules.docker | default(false)
+
+    - name: Test Docker Compose installation
+      ansible.builtin.command: docker-compose --version
+      register: docker_compose_test
+      failed_when: false
+      changed_when: false
+      when: modules.docker | default(false)
+
+    - name: Test Oh My Zsh installation
+      ansible.builtin.stat:
+        path: /home/ansible/.oh-my-zsh
+      register: omz_test
+      when: modules.oh_my_zsh | default(false)
+
+    - name: Test essential utilities
+      ansible.builtin.command: "which {{ item }}"
+      register: utility_test
+      failed_when: false
+      changed_when: false
+      loop:
+        - htop
+        - vim
+        - git
+        - curl
+        - wget
+
+    - name: Test firewall status
+      ansible.builtin.command: "{{ firewall_status_command }}"
+      register: firewall_test
+      failed_when: false
+      changed_when: false
+      vars:
+        firewall_status_command: "{{ 'ufw status' if ansible_os_family == 'Debian' else 'firewall-cmd --state' }}"
+
+    - name: Compile test results
+      ansible.builtin.set_fact:
+        test_results: "{{ test_results + [item] }}"
+      loop:
+        - { name: "SSH Service", status: "{{ 'PASS' if ssh_test.status.ActiveState == 'active' else 'FAIL' }}" }
+        - { name: "Ansible User", status: "{{ 'PASS' if ansible_user_test is succeeded else 'FAIL' }}" }
+        - { name: "Sudo Access", status: "{{ 'PASS' if sudo_test.rc == 0 else 'FAIL' }}" }
+        - { name: "Docker", status: "{{ 'PASS' if docker_test.rc == 0 else 'SKIP' if not (modules.docker | default(false)) else 'FAIL' }}" }
+        - { name: "Docker Compose", status: "{{ 'PASS' if docker_compose_test.rc == 0 else 'SKIP' if not (modules.docker | default(false)) else 'FAIL' }}" }
+        - { name: "Oh My Zsh", status: "{{ 'PASS' if omz_test.stat.exists else 'SKIP' if not (modules.oh_my_zsh | default(false)) else 'FAIL' }}" }
+
+    - name: Display test results
+      ansible.builtin.debug:
+        msg: |
+          ========================================
+          BOOTSTRAP VALIDATION RESULTS
+          ========================================
+          {% for result in test_results %}
+          {{ result.name }}: {{ result.status }}
+          {% endfor %}
+          ========================================
+
+    - name: Generate test report
+      ansible.builtin.template:
+        src: test_report.html.j2
+        dest: /tmp/bootstrap_test_report.html
+        mode: '0644'
+      delegate_to: localhost
+
+    - name: Check for failed tests
+      ansible.builtin.fail:
+        msg: "Some tests failed. Check the detailed output above."
+      when: test_results | selectattr('status', 'equalto', 'FAIL') | list | length > 0
