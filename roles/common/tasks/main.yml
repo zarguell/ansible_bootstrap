@@ -12,6 +12,7 @@
       - python3-pip
       - openssl
       - ca-certificates
+      - acl
     state: present
 
 - name: Configure timezone
