@@ -58,8 +58,8 @@ install_deps_rhel() {
     sudo dnf install -y ansible git
 }
 
-# Function to install Ansible and Git on Ubuntu/Debian
-install_deps_debian() {
+# Function to install Ansible and Git on Ubuntu
+install_deps_ubuntu() {
     echo "Installing dependencies on Ubuntu..."
     sudo apt-get update
     sudo apt-get install -y software-properties-common git
