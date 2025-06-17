@@ -6,7 +6,7 @@
   hosts: localhost
   tasks:
     - name: Create vars directories for all roles
-      file:
+      ansible.builtin.file:
         path: "roles/{{ item }}/vars"
         state: directory
       loop:
@@ -31,7 +31,7 @@
         - utilities
 
     - name: Create main vars directory
-      file:
+      ansible.builtin.file:
         path: "vars"
         state: directory
 

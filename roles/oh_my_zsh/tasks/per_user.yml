@@ -1,4 +1,3 @@
-# Fixed roles/oh_my_zsh/tasks/per_user.yml
 ---
 - name: Get home directory of {{ user.name }}
   ansible.builtin.getent:

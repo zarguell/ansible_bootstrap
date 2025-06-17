@@ -43,7 +43,7 @@
   when: install_docker_compose | default(true)
 
 - name: Create docker-compose symlink
-  file:
+  ansible.builtin.file:
     src: /usr/local/bin/docker-compose
     dest: /usr/bin/docker-compose
     state: link
@@ -61,7 +61,7 @@
   when: docker_daemon_config is defined
 
 - name: Ensure Docker daemon configuration directory exists
-  file:
+  ansible.builtin.file:
     path: /etc/docker
     state: directory
     owner: root

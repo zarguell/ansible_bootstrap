@@ -7,7 +7,7 @@
 
   pre_tasks:
     - name: Create vars directory for common role if it doesn't exist
-      file:
+      ansible.builtin.file:
         path: "roles/common/vars"
         state: directory
       tags: always
