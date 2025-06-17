@@ -86,7 +86,7 @@ zsh_config:
     la: "ls -A"
     l: "ls -CF"
     grep: "grep --color=auto"
-    
+
 # Docker configuration
 docker_config:
   docker_install_docker_compose: true

@@ -11,25 +11,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.13'
-          
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install ansible ansible-lint yamllint
-          
+
       - name: Lint Ansible playbooks
         run: |
-          ansible-lint server_bootstrap.yml -i .ansible-lint-ignore 
-          ansible-lint test_bootstrap.yml -i .ansible-lint-ignore 
-          
+          ansible-lint server_bootstrap.yml -i .ansible-lint-ignore
+          ansible-lint test_bootstrap.yml -i .ansible-lint-ignore
+
       - name: Lint YAML files
         run: |
-          yamllint -d relaxed .
+          yamllint .
 
   test-ubuntu:
     runs-on: ubuntu-latest
@@ -38,25 +38,25 @@ jobs:
       matrix:
         ubuntu-version: ['22.04', '24.04']
         environment: ['minimal', 'development', 'production']
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Set up test environment
         run: |
           sudo apt-get update
           sudo apt-get install -y ansible
-          
+
       - name: Run bootstrap test
         run: |
           export BOOTSTRAP_ENVIRONMENT=${{ matrix.environment }}
           ansible-playbook -i inventory test_bootstrap.yml --check
-          
+
       - name: Run actual bootstrap
         run: |
           export BOOTSTRAP_ENVIRONMENT=${{ matrix.environment }}
           ansible-playbook -i inventory server_bootstrap.yml
-          
+
       - name: Verify installation
         run: |
           ansible-playbook -i inventory test_bootstrap.yml
@@ -67,10 +67,10 @@ jobs:
     strategy:
       matrix:
         environment: ['minimal', 'development', 'production']
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Test with Docker
         run: |
           docker run --rm -v $PWD:/workspace -w /workspace \
