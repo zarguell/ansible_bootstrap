@@ -17,9 +17,9 @@ A modular Ansible-based system for bootstrapping new Linux servers with your pre
 1. Download and run the bootstrap script:
 
 ```bash
-curl -O https://example.com/bootstrap.sh
-chmod +x bootstrap.sh
-./bootstrap.sh
+curl -O https://raw.githubusercontent.com/zarguell/ansible_bootstrap/refs/heads/main/server_bootstrap.yml
+chmod +x server_bootstrap.sh
+./server_bootstrap.sh
 ```
 
 This will:
@@ -33,27 +33,27 @@ This will:
 The bootstrap script supports several options:
 
 ```
-./bootstrap.sh [-c] [-r repo_url] [-n clone_dir]
+./server_bootstrap.sh [-c] [-r repo_url] [-n clone_dir]
 ```
 
 - `-c`: Clone only (don't run the playbook)
-- `-r`: Set custom repository URL (default: https://github.com/yourusername/linux-server-bootstrap.git)
+- `-r`: Set custom repository URL (default: https://github.com/zarguell/ansible_bootstrap.git)
 - `-n`: Set custom clone directory (default: /tmp/linux-server-bootstrap)
 
 Examples:
 
 ```bash
 # Clone only, don't run the playbook
-./bootstrap.sh -c
+./server_bootstrap.sh -c
 
 # Use a custom repository
-./bootstrap.sh -r https://github.com/myusername/my-bootstrap.git
+./server_bootstrap.sh -r https://github.com/myusername/my-bootstrap.git
 
 # Specify a custom clone directory
-./bootstrap.sh -n /opt/bootstrap
+./server_bootstrap.sh -n /opt/bootstrap
 
 # Combine options
-./bootstrap.sh -c -r https://github.com/myusername/my-bootstrap.git -n /opt/bootstrap
+./server_bootstrap.sh -c -r https://github.com/zarguell/ansible_bootstrap.git -n /opt/bootstrap
 ```
 
 ## Manual Installation
@@ -66,8 +66,8 @@ If you prefer to run the steps manually:
 
 2. Clone this repository:
    ```bash
-   git clone https://github.com/yourusername/linux-server-bootstrap.git
-   cd linux-server-bootstrap
+   git clone https://github.com/zarguell/ansible_bootstrap.git
+   cd ansible_bootstrap
    ```
 
 3. Run the playbook:
@@ -153,7 +153,7 @@ To add new functionality:
 ## Repository Structure
 
 ```
-bootstrap/
+ansible_bootstrap/
 ├── bootstrap.sh                # Main bash script to detect OS and install Ansible
 ├── ansible.cfg                 # Ansible configuration
 ├── inventory                   # Inventory file for local execution
