@@ -8,7 +8,7 @@
   ansible.builtin.template:
     src: rsyslog.conf.j2
     dest: /etc/rsyslog.d/50-ansible.conf
-    backup: yes
+    backup: true
   notify: restart rsyslog
   when: monitoring_centralized_logging | default(false)
 
@@ -40,7 +40,7 @@
     minute: "{{ item.minute }}"
     hour: "{{ item.hour }}"
     job: "{{ item.job }}"
-    user: root
+    ansible.builtin.user: root
   loop:
     - name: "Disk usage check"
       minute: "0"

@@ -20,7 +20,7 @@
   args:
     executable: /bin/bash
     creates: "{{ user_home }}/.oh-my-zsh"
-  become: yes
+  become: true
   become_user: "{{ user.name }}"
   when: not omz_installed.stat.exists
 
@@ -35,7 +35,7 @@
     dest: "{{ user_home }}/.oh-my-zsh/custom/themes/powerlevel10k"
     depth: 1
     force: yes
-  become: yes
+  become: true
   become_user: "{{ user.name }}"
 
 - name: Configure .zshrc with Powerlevel10k theme
@@ -44,7 +44,7 @@
     regexp: '^ZSH_THEME='
     line: 'ZSH_THEME="powerlevel10k/powerlevel10k"'
     backup: yes
-  become: yes
+  become: true
   become_user: "{{ user.name }}"
 
 ---

@@ -2,8 +2,8 @@
 ---
 - name: Test Bootstrap Configuration
   hosts: localhost
-  become: yes
-  gather_facts: yes
+  become: true
+  gather_facts: true
   vars:
     test_results: []
 
@@ -21,7 +21,7 @@
         state: present
       register: ansible_user_test
       failed_when: false
-      check_mode: yes
+      check_mode: true
 
     - name: Test ansible user sudo access
       ansible.builtin.command: sudo -u ansible sudo -n true

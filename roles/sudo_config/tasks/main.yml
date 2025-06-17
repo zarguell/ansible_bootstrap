@@ -1,6 +1,6 @@
 ---
 - name: Check if sudo is installed
-  package:
+  ansible.builtin.package:
     name: sudo
     state: present
 
@@ -10,14 +10,14 @@
     state: directory
     mode: '0755'
     owner: root
-    group: root
+    ansible.builtin.group: root
 
 - name: Configure passwordless sudo for ansible user
-  copy:
+  ansible.builtin.copy:
     dest: /etc/sudoers.d/ansible
     content: "ansible ALL=(ALL) NOPASSWD: ALL"
     owner: root
-    group: root
+    ansible.builtin.group: root
     mode: '0440'
     validate: 'visudo -cf %s'
 
@@ -25,5 +25,5 @@
   ansible.builtin.file:
     path: /etc/sudoers.d/ansible
     owner: root
-    group: root
+    ansible.builtin.group: root
     mode: '0440'

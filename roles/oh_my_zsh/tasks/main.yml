@@ -1,5 +1,5 @@
 - name: Install required packages
-  package:
+  ansible.builtin.package:
     name:
       - zsh
       - git
@@ -7,7 +7,7 @@
     state: present
 
 - name: Configure Oh My Zsh for each user
-  include_tasks: per_user.yml
+  ansible.builtin.include_tasks: per_user.yml
   loop: "{{ zsh_config.users }}"
   loop_control:
     loop_var: user

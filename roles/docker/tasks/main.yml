@@ -1,62 +1,62 @@
 ---
 - name: Include OS-specific variables
-  include_vars: "{{ item }}"
+  ansible.builtin.include_vars: "{{ item }}"
   with_first_found:
     - "{{ ansible_distribution | lower }}.yml"
     - "{{ ansible_os_family | lower }}.yml"
     - "default.yml"
 
 - name: Include OS-specific Docker installation tasks
-  include_tasks: "{{ item }}"
+  ansible.builtin.include_tasks: "{{ item }}"
   with_first_found:
     - "{{ ansible_distribution | lower }}.yml"
     - "{{ ansible_os_family | lower }}.yml"
     - "default.yml"
 
 - name: Start and enable Docker service
-  systemd:
+  ansible.builtin.systemd:
     name: docker
     state: started
-    enabled: yes
-    daemon_reload: yes
+    enabled: true
+    daemon_reload: true
 
 - name: Create docker group
-  group:
+  ansible.builtin.group:
     name: docker
     state: present
 
 - name: Add users to docker group
-  user:
+  ansible.builtin.user:
     name: "{{ item }}"
     groups: docker
-    append: yes
+    append: true
   loop: "{{ docker_users }}"
   when: docker_users is defined and docker_users | length > 0
 
 - name: Install Docker Compose
-  get_url:
+  ansible.builtin.get_url:
     url: "https://github.com/docker/compose/releases/download/{{ docker_compose_version }}/docker-compose-{{ ansible_system }}-{{ ansible_architecture }}"
     dest: /usr/local/bin/docker-compose
     mode: '0755'
     owner: root
-    group: root
-  when: install_docker_compose | default(true)
+    ansible.builtin.group: root
+  when: docker_install_docker_compose | default(true)
 
 - name: Create docker-compose symlink
   ansible.builtin.file:
     src: /usr/local/bin/docker-compose
     dest: /usr/bin/docker-compose
     state: link
-  when: install_docker_compose | default(true)
+  when: docker_install_docker_compose | default(true)
 
 - name: Configure Docker daemon
-  template:
+  ansible.builtin.template:
     src: daemon.json.j2
     dest: /etc/docker/daemon.json
     owner: root
-    group: root
+    ansible.builtin.group: root
     mode: '0644'
-    backup: yes
+    backup: true
   notify: restart docker
   when: docker_daemon_config is defined
 
@@ -65,5 +65,5 @@
     path: /etc/docker
     state: directory
     owner: root
-    group: root
+    ansible.builtin.group: root
     mode: '0755'

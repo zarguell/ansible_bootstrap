@@ -1,11 +1,11 @@
 ---
 - name: Update apt cache
-  apt:
-    update_cache: yes
+  ansible.builtin.apt:
+    update_cache: true
     cache_valid_time: 3600
 
 - name: Install necessary packages for repository management
-  apt:
+  ansible.builtin.apt:
     name:
       - apt-transport-https
       - ca-certificates
@@ -16,17 +16,17 @@
     state: present
 
 - name: Add universe repository for Ubuntu
-  apt_repository:
+  ansible.builtin.apt_repository:
     repo: deb http://archive.ubuntu.com/ubuntu {{ ansible_distribution_release }} universe
     state: present
   when: ansible_distribution == 'Ubuntu'
 
 - name: Add multiverse repository for Ubuntu
-  apt_repository:
+  ansible.builtin.apt_repository:
     repo: deb http://archive.ubuntu.com/ubuntu {{ ansible_distribution_release }} multiverse
     state: present
   when: ansible_distribution == 'Ubuntu'
 
 - name: Update apt cache after adding repositories
-  apt:
-    update_cache: yes
+  ansible.builtin.apt:
+    update_cache: true

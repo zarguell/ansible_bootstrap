@@ -89,7 +89,7 @@ zsh_config:
     
 # Docker configuration
 docker_config:
-  install_docker_compose: true
+  docker_install_docker_compose: true
   docker_compose_version: "v2.24.5"
   users: ["ansible"]
   daemon_config:

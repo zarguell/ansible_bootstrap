@@ -1,5 +1,5 @@
 ---
-common_packages:
+utilities_common_packages:
   - htop
   - vim
   - tmux
@@ -18,4 +18,4 @@ common_packages:
   - traceroute
   - lsof
 
-os_specific_packages: []
+utilities_os_specific_packages: []

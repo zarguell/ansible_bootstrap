@@ -19,7 +19,7 @@
 
 - name: Update package cache (Debian/Ubuntu)
   ansible.builtin.apt:
-    update_cache: yes
+    update_cache: true
     cache_valid_time: 3600
   when: ansible_os_family == "Debian"
   register: apt_update_result
@@ -29,7 +29,7 @@
 
 - name: Update package cache (RedHat/CentOS)
   ansible.builtin.dnf:
-    update_cache: yes
+    update_cache: true
   when: ansible_os_family == "RedHat"
   register: dnf_update_result
   retries: 3
@@ -66,8 +66,9 @@
   ansible.builtin.copy:
     src: /etc/ssh/sshd_config
     dest: /etc/ssh/sshd_config.backup.{{ ansible_date_time.epoch }}
-    remote_src: yes
-    backup: yes
+    remote_src: true
+    mode: preserve
+    backup: true
   when: not ansible_check_mode
 
 - name: Validate SSH config before applying changes

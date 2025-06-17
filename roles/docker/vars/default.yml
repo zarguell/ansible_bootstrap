@@ -1,7 +1,7 @@
 ---
 # Docker version and configuration
 docker_compose_version: "v2.24.5"
-install_docker_compose: true
+docker_install_docker_compose: true
 
 # Users to add to docker group
 docker_users:

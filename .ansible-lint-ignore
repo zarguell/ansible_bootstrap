@@ -1,0 +1,9 @@
+# This file contains ignores rule violations for ansible-lint
+roles/ansible_user/tasks/main.yml args[module]
+roles/ansible_user/tasks/main.yml jinja[spacing]
+roles/common/tasks/main.yml syntax-check[unknown-module]
+roles/docker/tasks/main.yml args[module]
+roles/oh_my_zsh/tasks/per_user.yml load-failure
+roles/repos/tasks/redhat.yml ignore-errors
+roles/sudo_config/tasks/main.yml args[module]
+server_bootstrap.yml ignore-errors

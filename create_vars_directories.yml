@@ -18,7 +18,7 @@
         - utilities
 
     - name: Create default vars files
-      copy:
+      ansible.builtin.copy:
         dest: "roles/{{ item }}/vars/default.yml"
         content: "---\n# Default variables for {{ item }} role\n"
         force: no
@@ -36,7 +36,7 @@
         state: directory
 
     - name: Create default vars file
-      copy:
+      ansible.builtin.copy:
         dest: "vars/default.yml"
         content: |
           ---

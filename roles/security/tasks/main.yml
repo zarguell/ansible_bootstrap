@@ -39,7 +39,7 @@
 - name: Configure SSH hardening
   ansible.builtin.blockinfile:
     path: /etc/ssh/sshd_config
-    backup: yes
+    backup: true
     marker: "# {mark} ANSIBLE MANAGED BLOCK - SSH HARDENING"
     block: |
       # SSH Hardening
@@ -65,9 +65,9 @@
     path: "{{ item }}"
     mode: "0600"
     owner: root
-    group: root
+    ansible.builtin.group: root
   loop:
     - /etc/shadow
     - /etc/gshadow
     - /etc/ssh/sshd_config
-  ignore_errors: yes
+  ignore_errors: true

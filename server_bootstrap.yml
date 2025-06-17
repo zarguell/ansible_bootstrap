@@ -1,7 +1,7 @@
 ---
 - name: Bootstrap Server Configuration
   hosts: localhost
-  become: yes
+  become: true
   vars_files:
     - config.yml
 
@@ -10,23 +10,25 @@
       ansible.builtin.file:
         path: "roles/common/vars"
         state: directory
+        mode: '0640'
       tags: always
 
     - name: Ensure default vars file exists for common role
-      copy:
+      ansible.builtin.copy:
         dest: "roles/common/vars/default.yml"
         content: "---\n# Default variables for common role\n"
-        force: no
+        force: false
+        mode: '0640'
       tags: always
 
     - name: Include OS-specific variables
-      include_vars: "{{ item }}"
+      ansible.builtin.include_vars: "{{ item }}"
       with_first_found:
         - "vars/{{ ansible_distribution | lower }}.yml"
-        - "vars/{{ ansible_os_family | lower }}.yml" 
+        - "vars/{{ ansible_os_family | lower }}.yml"
         - "vars/default.yml"
         - "roles/common/vars/default.yml"
-      ignore_errors: yes
+      ignore_errors: true
       tags: always
 
   roles:
@@ -54,7 +56,7 @@
       tags: docker
       vars:
         docker_users: "{{ docker_config.users | default(['ansible']) }}"
-        install_docker_compose: "{{ docker_config.install_docker_compose | default(true) }}"
+        docker_install_docker_compose: "{{ docker_config.docker_install_docker_compose | default(true) }}"
         docker_compose_version: "{{ docker_config.docker_compose_version | default('v2.24.5') }}"
         docker_daemon_config: "{{ docker_config.daemon_config | default({}) }}"
 
