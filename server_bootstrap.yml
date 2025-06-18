@@ -31,6 +31,10 @@
       ignore_errors: true
       tags: always
 
+    - name: Debug OS information
+      ansible.builtin.debug:
+        msg: "Distribution: {{ ansible_distribution }}, OS Family: {{ ansible_os_family }}"
+
   roles:
     - role: common
       tags: common
