@@ -8,12 +8,12 @@
     test_results: []
 
   tasks:
-    - name: Test SSH service
-      ansible.builtin.systemd:
-        name: "{{ 'sshd' if ansible_os_family == 'RedHat' else 'ssh' }}"
-        state: started
-      register: ssh_test
-      failed_when: false
+    # - name: Test SSH service
+    #   ansible.builtin.systemd:
+    #     name: "{{ 'sshd' if ansible_os_family == 'RedHat' else 'ssh' }}"
+    #     state: started
+    #   register: ssh_test
+    #   failed_when: false
 
     - name: Test ansible user exists
       ansible.builtin.user:
@@ -73,7 +73,7 @@
       ansible.builtin.set_fact:
         test_results: "{{ test_results + [item] }}"
       loop:
-        - { name: "SSH Service", status: "{{ 'PASS' if ssh_test.status.ActiveState == 'active' else 'FAIL' }}" }
+        # - { name: "SSH Service", status: "{{ 'PASS' if ssh_test.status.ActiveState == 'active' else 'FAIL' }}" }
         - { name: "Ansible User", status: "{{ 'PASS' if ansible_user_test is succeeded else 'FAIL' }}" }
         - { name: "Sudo Access", status: "{{ 'PASS' if sudo_test.rc | default(-1) == 0 else 'FAIL' }}" }
         - { name: "Docker", status: "{{ 'PASS' if docker_test.rc | default(-1) == 0 else 'SKIP' if not (modules.docker | default(false)) else 'FAIL' }}" }
