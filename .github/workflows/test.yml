@@ -52,10 +52,16 @@ jobs:
           export BOOTSTRAP_ENVIRONMENT=${{ matrix.environment }}
           ansible-playbook -i inventory test_bootstrap.yml --check
 
+      - name: Set up non-root user w/ sudo access
+        run: |
+          sudo useradd -m testuser
+          echo "testuser:password" | sudo chpasswd
+          sudo usermod -aG sudo testuser
+
       - name: Run actual bootstrap
         run: |
           export BOOTSTRAP_ENVIRONMENT=${{ matrix.environment }}
-          ansible-playbook -i inventory server_bootstrap.yml
+          sudo -u testuser ansible-playbook -i inventory server_bootstrap.yml
 
       - name: Verify installation
         run: |
