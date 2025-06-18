@@ -4,7 +4,7 @@
     that:
       - ansible_memtotal_mb >= 512
       - ansible_processor_vcpus >= 1
-      - ansible_mounts | selectattr('mount', 'equalto', '/') | list | first | attr('size_available') > 1000000000
+      - ansible_mounts | selectattr('mount', 'equalto', '/') | list | first | default({}) | dict2items | selectattr('key', 'equalto', 'size_available') | map(attribute='value') | first | default(0) > 1000000000
     fail_msg: "System does not meet minimum requirements (512MB RAM, 1 CPU, 1GB free disk space)"
     success_msg: "System meets minimum requirements"
 
