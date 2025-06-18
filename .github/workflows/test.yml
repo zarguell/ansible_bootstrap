@@ -81,7 +81,7 @@ jobs:
   #             dnf install -y ansible && \
   #             export BOOTSTRAP_ENVIRONMENT=${{ matrix.environment }} && \
   #             ansible-playbook -i inventory server_bootstrap.yml --check
-            "
+  #           "
 
 ---
 # Makefile for development workflow
