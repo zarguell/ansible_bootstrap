@@ -58,6 +58,10 @@ jobs:
           echo "testuser:password" | sudo chpasswd
           sudo usermod -aG sudo testuser
 
+      - name: Change ownership of current directory to non-root user
+        run: |
+          sudo chown -R testuser:testuser .
+
       - name: Run actual bootstrap
         run: |
           export BOOTSTRAP_ENVIRONMENT=${{ matrix.environment }}
