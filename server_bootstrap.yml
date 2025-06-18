@@ -28,8 +28,19 @@
         - "vars/{{ ansible_os_family | lower }}.yml"
         - "vars/default.yml"
         - "roles/common/vars/default.yml"
+      register: included_vars
       ignore_errors: true
       tags: always
+
+    - name: Set fact for included variable file
+      ansible.builtin.set_fact:
+        found_var_file: "{{ included_vars.item }}"
+      when: included_vars is defined and included_vars.item is defined
+
+    - name: Debug found OS-specific variable file
+      ansible.builtin.debug:
+        msg: "Included OS-specific variable file: {{ found_var_file }}"
+      when: found_var_file is defined
 
     - name: Debug OS information
       ansible.builtin.debug:
