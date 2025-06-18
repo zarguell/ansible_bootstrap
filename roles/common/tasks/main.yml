@@ -38,7 +38,7 @@
 
 - name: Ensure essential packages are installed
   ansible.builtin.package:
-    name: "{{ essential_packages }}"
+    name: "{{ common_essential_packages }}"
     state: present
   register: package_install_result
   retries: 3

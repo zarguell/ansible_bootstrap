@@ -1,3 +1,9 @@
 ---
 # Common variables across all distributions
 ansible_python_interpreter: auto_silent
+common_essential_packages:
+  - python3
+  - python3-pip
+  - openssl
+  - ca-certificates
+  - acl
