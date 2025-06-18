@@ -91,12 +91,12 @@
           {% endfor %}
           ========================================
 
-    - name: Generate test report
-      ansible.builtin.template:
-        src: test_report.html.j2
-        dest: /tmp/bootstrap_test_report.html
-        mode: '0644'
-      delegate_to: localhost
+    # - name: Generate test report
+    #   ansible.builtin.template:
+    #     src: test_report.html.j2
+    #     dest: /tmp/bootstrap_test_report.html
+    #     mode: '0644'
+    #   delegate_to: localhost
 
     - name: Check for failed tests
       ansible.builtin.fail:
