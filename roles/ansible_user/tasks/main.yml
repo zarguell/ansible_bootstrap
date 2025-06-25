@@ -7,7 +7,7 @@
 - name: Create ansible user
   ansible.builtin.user:
     name: ansible
-    ansible.builtin.group: ansible
+    group: ansible
     shell: /bin/bash
     create_home: true
     state: present
@@ -15,7 +15,7 @@
 
 - name: Set authorized key for ansible user
   ansible.posix.authorized_key:
-    ansible.builtin.user: ansible
+    user: ansible
     state: present
     key: "{{ lookup('file', lookup('env','HOME') + '/.ssh/id_rsa.pub') }}"
   ignore_errors: true
