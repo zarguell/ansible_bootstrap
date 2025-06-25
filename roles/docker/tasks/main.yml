@@ -26,22 +26,6 @@
   loop: "{{ docker_users }}"
   when: docker_users is defined and docker_users | length > 0
 
-- name: Install Docker Compose
-  ansible.builtin.get_url:
-    url: "https://github.com/docker/compose/releases/download/{{ docker_compose_version }}/docker-compose-{{ ansible_system }}-{{ ansible_architecture }}"
-    dest: /usr/local/bin/docker-compose
-    mode: '0755'
-    owner: root
-    ansible.builtin.group: root
-  when: docker_install_docker_compose | default(true)
-
-- name: Create docker-compose symlink
-  ansible.builtin.file:
-    src: /usr/local/bin/docker-compose
-    dest: /usr/bin/docker-compose
-    state: link
-  when: docker_install_docker_compose | default(true)
-
 - name: Configure Docker daemon
   ansible.builtin.template:
     src: daemon.json.j2
