@@ -12,11 +12,6 @@
     fail_msg: "System does not meet minimum requirements (512MB RAM, 1 CPU, 1GB free disk space)"
     success_msg: "System meets minimum requirements"
 
-# - name: Check if running as root
-#   ansible.builtin.fail:
-#     msg: "This playbook should not be run as root user directly. Use become: yes instead."
-#   when: ansible_user_id == "root" and not ansible_check_mode
-
 - name: Gather package facts
   ansible.builtin.package_facts:
     manager: auto

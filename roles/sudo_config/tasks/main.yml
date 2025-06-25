@@ -10,14 +10,14 @@
     state: directory
     mode: '0755'
     owner: root
-    ansible.builtin.group: root
+    group: root
 
 - name: Configure passwordless sudo for ansible user
   ansible.builtin.copy:
     dest: /etc/sudoers.d/ansible
     content: "ansible ALL=(ALL) NOPASSWD: ALL"
     owner: root
-    ansible.builtin.group: root
+    group: root
     mode: '0440'
     validate: 'visudo -cf %s'
 
@@ -25,5 +25,5 @@
   ansible.builtin.file:
     path: /etc/sudoers.d/ansible
     owner: root
-    ansible.builtin.group: root
+    group: root
     mode: '0440'
