@@ -34,7 +34,7 @@
     group: root
     mode: '0644'
     backup: true
-  notify: restart docker
+  notify: Restart docker
   when: docker_daemon_config is defined
 
 - name: Ensure Docker daemon configuration directory exists
