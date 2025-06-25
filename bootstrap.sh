@@ -107,58 +107,6 @@ clone_repo() {
     git clone "$REPO_URL" "$CLONE_DIR"
     cd "$CLONE_DIR"
 
-    # Configure ansible.cfg for better output and compatibility
-    if [ -f ansible.cfg ]; then
-        # Add deprecation warnings suppression
-        if grep -q "^deprecation_warnings" ansible.cfg; then
-            sed -i 's/^deprecation_warnings.*/deprecation_warnings = False/' ansible.cfg
-        else
-            echo "deprecation_warnings = False" >> ansible.cfg
-        fi
-
-        # Set interpreter to auto_silent
-        if grep -q "^interpreter_python" ansible.cfg; then
-            sed -i 's/^interpreter_python.*/interpreter_python = auto_silent/' ansible.cfg
-        else
-            echo "interpreter_python = auto_silent" >> ansible.cfg
-        fi
-
-        # Remove problematic stdout callback that might not be available
-        if grep -q "stdout_callback = yaml" ansible.cfg; then
-            sed -i '/stdout_callback = yaml/d' ansible.cfg
-        fi
-    else
-        # Create a minimal ansible.cfg
-        cat > ansible.cfg << EOF
-[defaults]
-inventory = inventory
-roles_path = roles
-host_key_checking = False
-retry_files_enabled = False
-interpreter_python = auto_silent
-deprecation_warnings = False
-EOF
-    fi
-
-    # Create necessary directory structure
-    echo "Creating necessary vars directories and files..."
-    mkdir -p vars
-    mkdir -p roles/{common,ansible_user,sudo_config,repos,oh_my_zsh,utilities,docker}/{vars,tasks,handlers,templates}
-
-    # Create default vars file
-    if [ ! -f vars/default.yml ]; then
-        echo "---" > vars/default.yml
-        echo "# Default variables for all roles" >> vars/default.yml
-    fi
-
-    # Create default vars files for each role
-    for role in common ansible_user sudo_config repos oh_my_zsh utilities docker; do
-        if [ ! -f "roles/$role/vars/default.yml" ]; then
-            echo "---" > "roles/$role/vars/default.yml"
-            echo "# Default variables for $role role" >> "roles/$role/vars/default.yml"
-        fi
-    done
-
     echo "Repository cloned successfully to $CLONE_DIR"
 }
 

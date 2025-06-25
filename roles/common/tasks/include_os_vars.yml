@@ -1,0 +1,40 @@
+---
+- name: Load default variables first
+  ansible.builtin.include_vars: "{{ item }}"
+  with_first_found:
+    - files:
+        - "{{ role_path }}/vars/default.yml"
+        - "roles/common/vars/default.yml"
+      skip: true
+  tags: always
+
+- name: Load OS-specific variables (try multiple locations)
+  ansible.builtin.include_vars: "{{ item }}"
+  with_first_found:
+    - files:
+        # Try exact distribution name first (ubuntu.yml)
+        - "{{ role_path }}/vars/{{ ansible_distribution | lower }}.yml"
+        - "roles/common/vars/{{ ansible_distribution | lower }}.yml"
+        - "vars/{{ ansible_distribution | lower }}.yml"
+        # Then try OS family (debian.yml for Ubuntu)
+        - "{{ role_path }}/vars/{{ ansible_os_family | lower }}.yml"
+        - "roles/common/vars/{{ ansible_os_family | lower }}.yml"
+        - "vars/{{ ansible_os_family | lower }}.yml"
+        # Fallback to default if nothing else works
+        - "{{ role_path }}/vars/default.yml"
+        - "roles/common/vars/default.yml"
+      skip: true
+  register: os_vars_loaded
+  tags: always
+
+- name: Debug which variables were loaded
+  ansible.builtin.debug:
+    msg: "Loaded OS-specific variables from: {{ os_vars_loaded.item | default('default only') }}"
+  when: os_vars_loaded is defined
+  tags: always
+
+- name: Debug common_essential_packages
+  ansible.builtin.debug:
+    var: common_essential_packages
+  when: common_essential_packages is defined
+  tags: always

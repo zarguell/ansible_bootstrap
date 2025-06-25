@@ -1,4 +1,8 @@
 ---
+- name: Include OS-specific variables
+  ansible.builtin.include_tasks: include_os_vars.yml
+  tags: always
+
 - name: Validate system requirements
   ansible.builtin.assert:
     that:
