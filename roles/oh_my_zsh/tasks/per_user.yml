@@ -46,19 +46,3 @@
     backup: yes
   become: true
   become_user: "{{ user.name }}"
-
----
-# Fixed roles/oh_my_zsh/tasks/main.yml
-- name: Install required packages
-  ansible.builtin.package:
-    name:
-      - zsh
-      - git
-      - curl
-    state: present
-
-- name: Configure Oh My Zsh for each user
-  ansible.builtin.include_tasks: per_user.yml
-  loop: "{{ zsh_config.users }}"
-  loop_control:
-    loop_var: user
