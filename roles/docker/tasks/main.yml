@@ -31,7 +31,7 @@
     src: daemon.json.j2
     dest: /etc/docker/daemon.json
     owner: root
-    ansible.builtin.group: root
+    group: root
     mode: '0644'
     backup: true
   notify: restart docker
@@ -42,5 +42,5 @@
     path: /etc/docker
     state: directory
     owner: root
-    ansible.builtin.group: root
+    group: root
     mode: '0755'
