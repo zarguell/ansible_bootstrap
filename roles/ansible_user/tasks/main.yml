@@ -13,23 +13,22 @@
     state: present
     comment: "Ansible Automation User"
 
-- name: Set authorized key for ansible user
-  ansible.posix.authorized_key:
-    user: ansible
-    state: present
-    key: "{{ lookup('file', lookup('env','HOME') + '/.ssh/id_rsa.pub') }}"
-  ignore_errors: true
-  register: ssh_key_result
-
-- name: Display message if SSH key not found
-  ansible.builtin.debug:
-    msg: "No SSH key found at ~/.ssh/id_rsa.pub. You'll need to manually add your SSH key for the ansible user."
-  when: ssh_key_result is failed
-
 - name: Ensure ansible user's .ssh directory exists
   ansible.builtin.file:
     path: /home/ansible/.ssh
     state: directory
     owner: ansible
-    ansible.builtin.group: ansible
+    group: ansible
     mode: '0700'
+
+- name: Set authorized key for ansible user
+  ansible.posix.authorized_key:
+    user: ansible
+    state: present
+    key: "{{ ansible_user_ssh_key }}"
+  when: ansible_user_ssh_key is defined and ansible_user_ssh_key | length > 0
+
+- name: Display message if SSH key variable not provided
+  ansible.builtin.debug:
+    msg: "No SSH key provided in ansible_user_ssh_key variable. You'll need to manually add your SSH key for the ansible user."
+  when: ansible_user_ssh_key is not defined or ansible_user_ssh_key | length == 0

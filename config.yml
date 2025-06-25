@@ -24,6 +24,7 @@ modules:
 user_config:
   create_ansible_user: true
   ansible_user_ssh_key_path: "~/.ssh/id_rsa.pub"
+  ansible_user_ssh_key: "changeme"
   additional_users: []
   # Example:
   # additional_users:
