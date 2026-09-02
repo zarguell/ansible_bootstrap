@@ -3,26 +3,26 @@
   ansible.builtin.getent:
     database: passwd
     key: "{{ user.name }}"
-  register: user_info
+  register: oh_my_zsh_user_info
 
 - name: Set user_home fact
   ansible.builtin.set_fact:
-    user_home: "{{ user_info.ansible_facts.getent_passwd[user.name][4] }}"
+    oh_my_zsh_user_home: "{{ oh_my_zsh_user_info.ansible_facts.getent_passwd[user.name][4] }}"
 
 - name: Check if Oh My Zsh is installed
   ansible.builtin.stat:
-    path: "{{ user_home }}/.oh-my-zsh"
-  register: omz_installed
+    path: "{{ oh_my_zsh_user_home }}/.oh-my-zsh"
+  register: oh_my_zsh_omz_installed
 
 - name: Install Oh My Zsh
   ansible.builtin.shell: |
     sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
   args:
     executable: /bin/bash
-    creates: "{{ user_home }}/.oh-my-zsh"
+    creates: "{{ oh_my_zsh_user_home }}/.oh-my-zsh"
   become: true
   become_user: "{{ user.name }}"
-  when: not omz_installed.stat.exists
+  when: not oh_my_zsh_omz_installed.stat.exists
 
 - name: Set ZSH as default shell
   ansible.builtin.user:
@@ -32,15 +32,16 @@
 - name: Install Powerlevel10k theme
   ansible.builtin.git:
     repo: https://github.com/romkatv/powerlevel10k.git
-    dest: "{{ user_home }}/.oh-my-zsh/custom/themes/powerlevel10k"
+    dest: "{{ oh_my_zsh_user_home }}/.oh-my-zsh/custom/themes/powerlevel10k"
     depth: 1
     force: yes
+    version: master
   become: true
   become_user: "{{ user.name }}"
 
 - name: Configure .zshrc with Powerlevel10k theme
   ansible.builtin.lineinfile:
-    path: "{{ user_home }}/.zshrc"
+    path: "{{ oh_my_zsh_user_home }}/.zshrc"
     regexp: '^ZSH_THEME='
     line: 'ZSH_THEME="powerlevel10k/powerlevel10k"'
     backup: yes
