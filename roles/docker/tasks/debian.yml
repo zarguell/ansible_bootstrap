@@ -43,10 +43,18 @@
     path: /etc/apt/keyrings/docker.gpg
   register: docker_key_stat
 
-- name: Download and add Docker GPG key
-  ansible.builtin.shell: |
-    curl -fsSL https://download.docker.com/linux/{{ ansible_distribution | lower }}/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-    chmod 644 /etc/apt/keyrings/docker.gpg
+- name: Download Docker GPG key
+  ansible.builtin.get_url:
+    url: "https://download.docker.com/linux/{{ ansible_distribution | lower }}/gpg"
+    dest: /etc/apt/keyrings/docker.gpg.asc
+    mode: '0644'
+  when: not docker_key_stat.stat.exists
+  register: docker_gpg_download
+
+- name: Add Docker GPG key
+  ansible.builtin.shell: gpg --dearmor -o /etc/apt/keyrings/docker.gpg /etc/apt/keyrings/docker.gpg.asc && chmod 644 /etc/apt/keyrings/docker.gpg
+  args:
+    creates: /etc/apt/keyrings/docker.gpg
   when: not docker_key_stat.stat.exists
 
 - name: Set architecture variable
@@ -64,8 +72,9 @@
     update_cache: true
 
 - name: Debug available Docker packages
-  ansible.builtin.shell: apt-cache search docker-ce
+  ansible.builtin.command: apt-cache search docker-ce
   register: docker_packages
+  changed_when: false
 
 - name: Show available packages
   ansible.builtin.debug:

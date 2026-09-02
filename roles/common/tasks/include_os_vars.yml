@@ -24,13 +24,13 @@
         - "{{ role_path }}/vars/default.yml"
         - "roles/common/vars/default.yml"
       skip: true
-  register: os_vars_loaded
+  register: common_os_vars_loaded
   tags: always
 
 - name: Debug which variables were loaded
   ansible.builtin.debug:
-    msg: "Loaded OS-specific variables from: {{ os_vars_loaded.item | default('default only') }}"
-  when: os_vars_loaded is defined
+    msg: "Loaded OS-specific variables from: {{ common_os_vars_loaded.item | default('default only') }}"
+  when: common_os_vars_loaded is defined
   tags: always
 
 - name: Debug common_essential_packages
